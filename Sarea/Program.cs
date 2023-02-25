@@ -54,7 +54,15 @@ public class Program
         _client.Ready += async () =>
         {
             Console.WriteLine("Bot is connected!");
-            await _commands.RegisterCommandsToGuildAsync(UInt64.Parse(config["guild_id"]), true);
+            try
+            {
+                await _commands.RegisterCommandsToGuildAsync(UInt64.Parse(config["guild_id"]), true);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         };
 
         await _client.LoginAsync(TokenType.Bot, config["tokens:discord"]);

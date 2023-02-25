@@ -23,26 +23,9 @@ namespace Sarea.Modules
         {
             await RespondAsync("Pong!");
         }
-
-        [SlashCommand("lois", "holy Fuck!")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task LoisAsync(int num)
-        {
-            if (num >= 10)
-            {
-                await ReplyAsync("You can't do that!");
-            }
-            else
-            {
-                for (var i = 0; i < num; i++)
-                {
-                    await ReplyAsync("HOLY FUCK");
-                    await ReplyAsync("I'M CUMMING");
-                }
-            }
-        }
-
+        
         [SlashCommand("sex", "HE'S PULLING HIS COCK OUT!!! ( ͡°( ͡° ͜ʖ( ͡° ͜ʖ ͡°)ʖ ͡°) ͡°)")]
+        [RequireOwner]
         public async Task SexAsync(IGuildUser user, IGuildUser user2, IGuildUser user3, IGuildUser? user4 = null)
         {
             var seggs = _seggs.ElementAt(_rand.Next(_seggs.Count));
