@@ -51,12 +51,12 @@ namespace Sarea.Modules
                 }
                 case 5:
                 {
-                    color = Color.LightOrange;
+                    color = Color.Gold;
                     break;
                 }
                 case 6:
                 {
-                    color = Color.Gold;
+                    color = Color.LightOrange;
                     break;
                 }
             }
@@ -77,7 +77,7 @@ namespace Sarea.Modules
                 .WithColor(color)
                 .WithImageUrl($"https://raw.githubusercontent.com/Aceship/Arknight-Images/main/avatars/{character?.phases[2].outfit.portraitId}.png")
                 .WithDescription($"Here is a description for {characterName}.")
-                .WithUrl($"https://dataknights.pages.dev/operators/{character?.key}")
+                .WithUrl($"https://sareanaka.github.io/AK-Dataknights/operators/{character?.key}")
                 .WithCurrentTimestamp();
 
             await RespondAsync(embed: embed.Build());
