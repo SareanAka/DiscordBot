@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace Sarea
-{
+{/*
     public class Character
     {
         public string key { get; set; }
@@ -216,4 +216,5 @@ namespace Sarea
         public int elite { get; set; }
         public int level { get; set; }
     }
+    */
 }

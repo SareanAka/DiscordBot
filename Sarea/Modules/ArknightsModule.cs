@@ -5,13 +5,26 @@ using Microsoft.Extensions.Hosting.Internal;
 using System;
 using System.Text;
 using System.Text.Json;
+using Sarea.Models;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Sarea.Modules
 {
     [Group("arknights", "a group of arknights commands")]
     public class ArknightsModule : InteractionModuleBase<SocketInteractionContext>
     {
+        static readonly Dictionary<int, Color> _rarityColors = new()
+        {
+            { 0, Color.Default },
+            { 1, Color.Green },
+            { 2, Color.Blue },
+            { 3, Color.Purple },
+            { 4, Color.Gold },
+            { 5, Color.Orange }
+        };
+
         [SlashCommand("updatedata", "Checks if there is an update in the character database")]
+        [RequireOwner]
         public async Task UpdateDataAsync()
         {
             // Download JSON file and save from URL
@@ -24,60 +37,44 @@ namespace Sarea.Modules
                     await response.Content.CopyToAsync(fs);
                 }
             }
-
             await RespondAsync("Data has been Updated.");
+
+            await CharacterConverter.Convert();
+
+            await ReplyAsync("Done Converting");
         }
 
-        [SlashCommand("test", "test")]
-        public async Task TestAsync(String arg)
+        [SlashCommand("characterinfo", "Gives a quick overview of a character")]
+        public async Task TestAsync(string name)
         {
-            Character? character = new Character();
-            string fileName = $"Data/Arknights/{arg}.json";
-            using FileStream openStream = File.OpenRead(fileName);
-            character = await JsonSerializer.DeserializeAsync<Character>(openStream)!;
-
-            Color color = Color.Teal;
-            switch (character?.rarity)
+            if (!File.Exists($"Data/Arknights/Characters/{name}.json"))
             {
-                case 3:
-                {
-                    color = Color.Blue;
-                    break;
-                }
-                case 4:
-                {
-                    color = Color.Purple;
-                    break;
-                }
-                case 5:
-                {
-                    color = Color.Gold;
-                    break;
-                }
-                case 6:
-                {
-                    color = Color.LightOrange;
-                    break;
-                }
+                await RespondAsync($"{name} was not found");
+                return;
             }
-
-            var characterName = character.key;
-            if (characterName.Contains("-"))
+            var character = JsonSerializer.Deserialize<Character>(await File.ReadAllTextAsync($"Data/Arknights/Characters/{name}.json"));
+            if (character == null)
             {
-                characterName = characterName.Replace("-", " ");
+                await RespondAsync($"{name} was not found");
+                return;
             }
+            var characterName = character.name;
+            var linkName = characterName.Replace(" ", "-").ToLower();
 
-            characterName = char.ToUpper(characterName[0]) + characterName.Substring(1);
+
+            var rarityColor = _rarityColors[character.rarity];
 
             var embed = new EmbedBuilder()
                 .WithTitle($"{characterName}")
-                .WithFooter(footer => footer.Text = $"{character?.id}")
-                .AddField("Rarity", $"Rarity: {character?.rarity}⭐")
-                .AddField("Description", $"{characterName} is a {character?.position.ToLower()} {character?._class.ToLowerInvariant()} from the {character?.classBranch} archetype")
-                .WithColor(color)
-                .WithImageUrl($"https://raw.githubusercontent.com/Aceship/Arknight-Images/main/avatars/{character?.phases[2].outfit.portraitId}.png")
+                .AddField("Rarity", $"Rarity: {character.rarity + 1}⭐")
+                .AddField("Description", $"{characterName} is a {character.position.ToLower()} {character.profession.ToLower()} from the {character.subProfessionId} archetype, " +
+                                         $"{character.description}\n" +
+                                         $"{character.itemUsage}\n" +
+                                         $"{character.itemDesc}")
+                .WithColor(rarityColor)
+                .WithImageUrl($"https://raw.githubusercontent.com/Aceship/Arknight-Images/main/avatars/{character.phases[2].characterPrefabKey}_2.png")
                 .WithDescription($"Here is a description for {characterName}.")
-                .WithUrl($"https://sareanaka.github.io/AK-Dataknights/operators/{character?.key}")
+                .WithUrl($"https://sareanaka.github.io/AK-Dataknights/operators/{linkName}")
                 .WithCurrentTimestamp();
 
             await RespondAsync(embed: embed.Build());
