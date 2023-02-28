@@ -4,9 +4,12 @@ using System.Net;
 using Microsoft.Extensions.Hosting.Internal;
 using System;
 using System.Text;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Sarea.Models;
 using static System.Net.Mime.MediaTypeNames;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+using System.Linq;
+using Discord.WebSocket;
 
 namespace Sarea.Modules
 {
@@ -45,7 +48,7 @@ namespace Sarea.Modules
         }
 
         [SlashCommand("characterinfo", "Gives a quick overview of a character")]
-        public async Task TestAsync(string name)
+        public async Task TestAsync([Summary("Characters"), Autocomplete] string name)
         {
             if (!File.Exists($"Data/Arknights/Characters/{name}.json"))
             {
@@ -78,6 +81,23 @@ namespace Sarea.Modules
                 .WithCurrentTimestamp();
 
             await RespondAsync(embed: embed.Build());
+        }
+
+        [AutocompleteCommand("Characters", "characterinfo")]
+        public async Task Autocomplete()
+        {
+            var userInput = (Context.Interaction as SocketAutocompleteInteraction)?.Data.Current.Value.ToString();
+
+            var results = new[]
+            {
+                new AutocompleteResult("foo", "foo_value"),
+                new AutocompleteResult("bar", "bar_value"),
+                new AutocompleteResult("baz", "baz_value"),
+            }.Where(x => userInput != null && x.Name.StartsWith(userInput, StringComparison.InvariantCultureIgnoreCase)); // only send suggestions that starts with user's input; use case insensitive matching
+
+
+            // max - 25 suggestions at a time
+            await (Context.Interaction as SocketAutocompleteInteraction)?.RespondAsync(results.Take(25))!;
         }
     }
 }

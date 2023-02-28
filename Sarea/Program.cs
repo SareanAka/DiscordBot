@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration.Yaml;
 using Newtonsoft.Json;
 using Sarea;
+using System;
 
 public class Program
 {
@@ -57,6 +58,7 @@ public class Program
             try
             {
                 await _commands.RegisterCommandsToGuildAsync(UInt64.Parse(config["guild_id"]), true);
+                await _commands.RegisterCommandsGloballyAsync();
             }
             catch (Exception e)
             {
