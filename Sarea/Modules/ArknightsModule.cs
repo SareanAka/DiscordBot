@@ -40,7 +40,7 @@ namespace Sarea.Modules
                     await response.Content.CopyToAsync(fs);
                 }
             }
-            await RespondAsync("Data has been Updated.");
+            await RespondAsync("Data has been Downloaded.");
 
             await CharacterConverter.Convert();
 
@@ -48,7 +48,7 @@ namespace Sarea.Modules
         }
 
         [SlashCommand("characterinfo", "Gives a quick overview of a character")]
-        public async Task TestAsync([Summary("Characters"), Autocomplete] string name)
+        public async Task TestAsync([Summary("Characters"), Autocomplete(typeof(ExampleAutocompleteHandler))] string name)
         {
             if (!File.Exists($"Data/Arknights/Characters/{name}.json"))
             {
@@ -83,21 +83,26 @@ namespace Sarea.Modules
             await RespondAsync(embed: embed.Build());
         }
 
-        [AutocompleteCommand("Characters", "characterinfo")]
-        public async Task Autocomplete()
+        public class ExampleAutocompleteHandler : AutocompleteHandler
         {
-            var userInput = (Context.Interaction as SocketAutocompleteInteraction)?.Data.Current.Value.ToString();
-
-            var results = new[]
+            public override async Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
             {
-                new AutocompleteResult("foo", "foo_value"),
-                new AutocompleteResult("bar", "bar_value"),
-                new AutocompleteResult("baz", "baz_value"),
-            }.Where(x => userInput != null && x.Name.StartsWith(userInput, StringComparison.InvariantCultureIgnoreCase)); // only send suggestions that starts with user's input; use case insensitive matching
+                try
+                {
+                    var characters = JsonConvert.DeserializeObject<string[]>("Data/Arknights/CharacterList.json");
+                    Console.WriteLine(characters.Length);
+                    
+                    var test = characters.Select(character => new AutocompleteResult(character, character));
 
-
-            // max - 25 suggestions at a time
-            await (Context.Interaction as SocketAutocompleteInteraction)?.RespondAsync(results.Take(25))!;
+                    // max - 25 suggestions at a time (API limit)
+                    return AutocompletionResult.FromSuccess(test.Take(25));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            }
         }
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration.Yaml;
 using Newtonsoft.Json;
 using Sarea;
 using System;
+using Sarea.Modules;
 
 public class Program
 {
@@ -32,6 +33,7 @@ public class Program
                         AlwaysDownloadUsers = true
                     }))
                     .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
+                    .AddSingleton<ArknightsModule.ExampleAutocompleteHandler>()
                     .AddSingleton<InteractionHandler>()
             )
             .Build();

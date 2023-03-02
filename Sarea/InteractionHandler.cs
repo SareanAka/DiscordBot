@@ -29,6 +29,10 @@ namespace Sarea
         {
             try
             {
+                _client.AutocompleteExecuted += async (SocketAutocompleteInteraction arg) => {
+                    var context = new InteractionContext(_client, arg, arg.Channel);
+                    await _commands.ExecuteCommandAsync(context, services: _service);
+                };
                 var ctx = new SocketInteractionContext(_client, interaction);
                 await _commands.ExecuteCommandAsync(ctx, _service);
             }
