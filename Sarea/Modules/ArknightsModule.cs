@@ -48,7 +48,7 @@ namespace Sarea.Modules
         }
 
         [SlashCommand("characterinfo", "Gives a quick overview of a character")]
-        public async Task TestAsync([Summary("Characters"), Autocomplete(typeof(ExampleAutocompleteHandler))] string name)
+        public async Task TestAsync(/*[Summary("Characters"), Autocomplete(typeof(ExampleAutocompleteHandler))]*/ string name)
         {
             if (!File.Exists($"Data/Arknights/Characters/{name}.json"))
             {
