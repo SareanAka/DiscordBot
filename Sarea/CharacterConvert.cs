@@ -39,8 +39,7 @@ namespace Sarea
                 {
                     _progress++;
                     Console.Write($"\r{0}% Checking: {_progress}/{characters.Count}...");
-                    var isValid = await IsCharacterValid($"https://raw.githubusercontent.com/Aceship/Arknight-Images/main/avatars/{character.Value.phases[0].characterPrefabKey}_2.png");
-                    if (!isValid)
+                    if (character.Value.profession is "TRAP" or "TOKEN")
                     {
                         continue;
                     }
@@ -60,21 +59,6 @@ namespace Sarea
         private static void HandleDeserializationError(object? sender, ErrorEventArgs e)
         {
             e.ErrorContext.Handled = true;
-        }
-
-        private static async Task<bool> IsCharacterValid(string uri)
-        {
-            try
-            {
-                var request = new HttpClient();
-
-                using var responseStream = await request.GetAsync(uri);
-                return responseStream.IsSuccessStatusCode;
-            }
-            catch
-            {
-                return false;
-            }
         }
     }
 }

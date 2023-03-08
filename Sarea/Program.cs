@@ -51,8 +51,7 @@ public class Program
         await services.GetRequiredService<InteractionHandler>().InitializeAsync();
         var config = services.GetRequiredService<IConfigurationRoot>();
 
-        _client.Log += async (LogMessage msg) => { Console.WriteLine(msg.Message); };
-        _commands.Log += async (LogMessage msg) => { Console.WriteLine(msg.Message); };
+        _client.Log += async (LogMessage msg) => { Console.WriteLine($"Client Log: {msg.Message}"); };
 
         _client.Ready += async () =>
         {

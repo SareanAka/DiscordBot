@@ -48,7 +48,7 @@ namespace Sarea.Modules
         }
 
         [SlashCommand("characterinfo", "Gives a quick overview of a character")]
-        public async Task TestAsync(/*[Summary("Characters"), Autocomplete(typeof(ExampleAutocompleteHandler))]*/ string name)
+        public async Task TestAsync([Summary("Characters"), Autocomplete(typeof(ExampleAutocompleteHandler))] string name)
         {
             if (!File.Exists($"Data/Arknights/Characters/{name}.json"))
             {
@@ -67,32 +67,47 @@ namespace Sarea.Modules
 
             var rarityColor = _rarityColors[character.rarity];
 
-            var embed = new EmbedBuilder()
-                .WithTitle($"{characterName}")
-                .AddField("Rarity", $"Rarity: {character.rarity + 1}⭐")
-                .AddField("Description", $"{characterName} is a {character.position.ToLower()} {character.profession.ToLower()} from the {character.subProfessionId} archetype, " +
-                                         $"{character.description}\n" +
-                                         $"{character.itemUsage}\n" +
-                                         $"{character.itemDesc}")
-                .WithColor(rarityColor)
-                .WithImageUrl($"https://raw.githubusercontent.com/Aceship/Arknight-Images/main/avatars/{character.phases[2].characterPrefabKey}_2.png")
-                .WithDescription($"Here is a description for {characterName}.")
-                .WithUrl($"https://sareanaka.github.io/AK-Dataknights/operators/{linkName}")
-                .WithCurrentTimestamp();
 
-            await RespondAsync(embed: embed.Build());
+            try
+            {
+                var embed = new EmbedBuilder()
+                    .WithTitle($"{characterName}")
+                    .AddField("Rarity", $"Rarity: {character.rarity + 1}⭐")
+                    .AddField("Description", $"{characterName} is a {character.position.ToLower()} {character.profession.ToLower()} from the {character.subProfessionId} archetype, " +
+                                             $"{character.description}\n" +
+                                             $"{character.itemUsage}\n" +
+                                             $"{character.itemDesc}")
+                    .WithColor(rarityColor)
+                    .WithImageUrl($"https://raw.githubusercontent.com/Aceship/Arknight-Images/main/avatars/{character.phases[2].characterPrefabKey}.png")
+                    .WithDescription($"Here is a description for {characterName}.")
+                    .WithUrl($"https://sareanaka.github.io/AK-Dataknights/operators/{linkName}")
+                    .WithCurrentTimestamp();
+                await RespondAsync(embed: embed.Build());
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public class ExampleAutocompleteHandler : AutocompleteHandler
         {
+            private List<string>? _characters = new();
             public override async Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
             {
+                if (_characters is { Count: 0 })
+                {
+                    Console.WriteLine("Loading...");
+                    var charactersJson = await File.ReadAllTextAsync("Data/Arknights/CharacterList.json");
+                    _characters = JsonConvert.DeserializeObject<List<string>>(charactersJson);
+                }
+
                 try
                 {
-                    var characters = JsonConvert.DeserializeObject<string[]>("Data/Arknights/CharacterList.json");
-                    Console.WriteLine(characters.Length);
+                    var filteredCharacters = _characters.Where(x => x.Contains(autocompleteInteraction.Data.Current.Value.ToString() ?? string.Empty, StringComparison.OrdinalIgnoreCase));
                     
-                    var test = characters.Select(character => new AutocompleteResult(character, character));
+                    var test = filteredCharacters.Select(character => new AutocompleteResult(character, character));
 
                     // max - 25 suggestions at a time (API limit)
                     return AutocompletionResult.FromSuccess(test.Take(25));
